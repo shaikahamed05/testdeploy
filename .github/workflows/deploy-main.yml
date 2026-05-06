@@ -48,7 +48,7 @@ jobs:
 
             mkdir -p ~/.docker/cli-plugins
 
-            if ! docker compose version >/dev/null 2>&1; then
+            if ! sudo docker compose version >/dev/null 2>&1; then
                 wget -O ~/.docker/cli-plugins/docker-compose \
                 https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-linux-x86_64
 
@@ -57,8 +57,8 @@ jobs:
 
             echo "Checking installed versions..."
             git --version
-            docker --version
-            docker compose version
+            sudo docker --version
+            sudo docker compose version
             python3 --version
 
             echo "Bootstrap completed."
@@ -173,7 +173,7 @@ jobs:
 
             cd /home/${USER}/omnibot
 
-            docker compose up -d postgres
+            sudo docker compose up -d postgres
 
             echo "PostgreSQL started."
 
@@ -205,7 +205,7 @@ jobs:
               cp nginx/nginx-blue.conf nginx/default.conf
             fi
 
-            docker compose up -d nginx
+            sudo docker compose up -d nginx
 
             echo "Nginx started."
 
@@ -245,9 +245,10 @@ jobs:
 
               echo "Deploying GREEN..."
 
-              docker compose build frontend-green
+              sudo docker compose build frontend-green
 
-              docker compose up -d frontend-green
+
+              sudo docker compose up -d frontend-green
 
               bash scripts/health-check.sh green
 
@@ -259,9 +260,9 @@ jobs:
 
               echo "Deploying BLUE..."
 
-              docker compose build frontend-blue
+              sudo docker compose build frontend-blue
 
-              docker compose up -d frontend-blue
+              sudo docker compose up -d frontend-blue
 
               bash scripts/health-check.sh blue
 
@@ -293,7 +294,7 @@ jobs:
 
             set -e
 
-            docker image prune -f
+            sudo docker image prune -f
 
             echo "Docker cleanup completed."
 
