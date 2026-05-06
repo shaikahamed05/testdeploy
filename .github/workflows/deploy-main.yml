@@ -114,28 +114,24 @@ jobs:
 
       - name: Prepare Files and Folders
         run: |
-          ssh -i ~/.ssh/ec2_key.pem \
-          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            ssh -i ~/.ssh/ec2_key.pem \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
 
             set -e
 
             BASE_DIR="/home/${USER}/omnibot"
-            APP_DIR="$BASE_DIR"
 
-            mkdir -p "$BASE_DIR/nginx"
-            mkdir -p "$BASE_DIR/database"
-            mkdir -p "$BASE_DIR/scripts"
+            cd "$BASE_DIR"
 
-            cp "$APP_DIR/docker-compose.yml" "$BASE_DIR/docker-compose.yml"
-            cp "$APP_DIR/.env" "$BASE_DIR/.env"
-            cp -r "$APP_DIR/nginx/"* "$BASE_DIR/nginx/"
-            cp -r "$APP_DIR/scripts/"* "$BASE_DIR/scripts/"
-            chmod +x "$BASE_DIR/scripts/"*.sh
-            cp "$APP_DIR/database/sairo_pgbdscript.sql" "$BASE_DIR/database/sairo_pgbdscript.sql"
+            mkdir -p nginx
+            mkdir -p database
+            mkdir -p scripts
+
+            chmod +x scripts/*.sh || true
 
             echo "Environment prepared."
 
-          EOF
+            EOF
 
   start-database:
     name: Start PostgreSQL Database
