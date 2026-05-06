@@ -163,12 +163,12 @@ jobs:
 
             cd /home/${USER}/omnibot
 
-            sudo docker-compose up -d postgres
+            sudo docker compose up -d postgres
 
             echo "PostgreSQL started."
 
             EOF
-            
+
   start-nginx:
     name: Start Nginx Reverse Proxy
     runs-on: ubuntu-latest
