@@ -30,26 +30,17 @@ jobs:
             sudo yum update -y
 
             echo "Installing dependencies..."
-            sudo yum install -y \
-                git \
-                docker \
-                wget \
-                tar \
-                gzip \
-                unzip \
-                python3 \
-                python3-pip
+            sudo yum install -y git docker wget tar gzip unzip python3 python3-pip
 
             echo "Starting Docker..."
             sudo systemctl enable docker
             sudo systemctl start docker
 
             echo "Installing Docker Compose..."
-
             mkdir -p ~/.docker/cli-plugins
 
             if ! sudo docker compose version >/dev/null 2>&1; then
-                wget -O ~/.docker/cli-plugins/docker-compose \
+                wget -q -O ~/.docker/cli-plugins/docker-compose \
                 https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-linux-x86_64
 
                 chmod +x ~/.docker/cli-plugins/docker-compose
@@ -64,7 +55,6 @@ jobs:
             echo "Bootstrap completed."
 
             EOF
-
   clone-repository:
     name: Clone or Update Repository
     runs-on: ubuntu-latest
