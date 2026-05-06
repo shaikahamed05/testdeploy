@@ -85,13 +85,11 @@ jobs:
 
             mkdir -p "$BASE_DIR"
 
-            if [ ! -d "$APP_DIR/.git" ]; then
-              echo "Cloning repository..."
-              git clone "$REPO_URL" "$APP_DIR"
+            if [ ! -d "$BASE_DIR/.git" ]; then
+                git clone "$REPO_URL" "$BASE_DIR"
             fi
 
-            cd "$APP_DIR"
-
+            cd "$BASE_DIR"
             git fetch origin
             git checkout main
             git pull origin main
