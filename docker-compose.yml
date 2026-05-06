@@ -2,6 +2,7 @@ services:
   frontend-blue:
     build:
       context: ./app
+      dockerfile: Dockerfile
     image: omnibot-frontend:blue
     container_name: omnibot-frontend-blue
     ports:
@@ -11,6 +12,7 @@ services:
   frontend-green:
     build:
       context: ./app
+      dockerfile: Dockerfile
     image: omnibot-frontend:green
     container_name: omnibot-frontend-green
     ports:
