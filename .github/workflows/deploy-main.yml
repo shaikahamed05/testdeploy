@@ -1,0 +1,122 @@
+name: Deploy Main to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Blue Green Deployment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup SSH Connection
+        run: |
+          mkdir -p ~/.ssh
+
+          echo "${{ secrets.EC2_KEY }}" > ~/.ssh/ec2_key.pem
+
+          chmod 600 ~/.ssh/ec2_key.pem
+
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy Application to EC2
+        run: |
+          ssh -i ~/.ssh/ec2_key.pem \
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+
+            set -e
+
+            BASE_DIR="/home/ec2-user/omnibot"
+            APP_DIR="$BASE_DIR/app"
+
+            REPO_URL="https://github.com/shaikahamed05/testdeploy.git"
+
+            echo "===================================="
+            echo "Starting Deployment..."
+            echo "===================================="
+
+            mkdir -p "$BASE_DIR"
+
+            # Clone repo first time
+            if [ ! -d "$APP_DIR/.git" ]; then
+              echo "Cloning repository..."
+              git clone "$REPO_URL" "$APP_DIR"
+            fi
+
+            echo "===================================="
+            echo "Pulling latest code from main..."
+            echo "===================================="
+
+            cd "$APP_DIR"
+
+            git fetch origin
+
+            git checkout main
+
+            git pull origin main
+
+            echo "===================================="
+            echo "Starting PostgreSQL..."
+            echo "===================================="
+
+            cd "$BASE_DIR"
+
+            docker compose up -d postgres
+
+            echo "===================================="
+            echo "Starting Nginx..."
+            echo "===================================="
+
+            docker compose up -d nginx
+
+            CURRENT=$(grep -o "frontend-[a-z]*" nginx/default.conf | head -1)
+
+            echo "Current Active Environment: $CURRENT"
+
+            echo "===================================="
+            echo "Blue Green Deployment..."
+            echo "===================================="
+
+            if [ "$CURRENT" = "frontend-blue" ]; then
+
+              echo "Deploying GREEN..."
+
+              docker compose build frontend-green
+
+              docker compose up -d frontend-green
+
+              bash scripts/health-check.sh green
+
+              bash scripts/switch-green.sh
+
+              echo "GREEN is now LIVE"
+
+            else
+
+              echo "Deploying BLUE..."
+
+              docker compose build frontend-blue
+
+              docker compose up -d frontend-blue
+
+              bash scripts/health-check.sh blue
+
+              bash scripts/switch-blue.sh
+
+              echo "BLUE is now LIVE"
+
+            fi
+
+            echo "===================================="
+            echo "Cleaning unused Docker images..."
+            echo "===================================="
+
+            docker image prune -f
+
+            echo "===================================="
+            echo "Deployment Completed Successfully"
+            echo "===================================="
+
+          EOF
